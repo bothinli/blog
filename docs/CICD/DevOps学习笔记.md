@@ -18,14 +18,13 @@
 
 DevOps这个词，其实就是Development和Operations两个词的组合。它的英文发音是 /de'vɒps/，类似于“迪沃普斯”。
 
-<img src="DevOps学习笔记.assets/v2-e17fc763c5db7ec686d8f4f8ae2d5aeb_720w.jpg" alt="img" style="zoom:80%;" />
+![img](DevOps学习笔记.assets/v2-e17fc763c5db7ec686d8f4f8ae2d5aeb_720w.jpg)
 
 DevOps的维基百科定义是这样的：
 
 DevOps是一组过程、方法与系统的统称，用于促进开发、技术运营和质量保障（QA）部门之间的沟通、协作与整合。
 
-<img src="DevOps学习笔记.assets/v2-f2f0e075c942ca3ba16729eb43f7d349_720w.jpg" alt="img" style="zoom:80%;" />
-
+![img](DevOps学习笔记.assets/v2-f2f0e075c942ca3ba16729eb43f7d349_720w.jpg)
 
 
 

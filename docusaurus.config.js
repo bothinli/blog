@@ -6,8 +6,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: '这人有点东西',
-  tagline: 'Never Knows Best',
+  title: 'Hi ~ 被你找到了哟',
+  tagline: '记录学习、留住生活，尝试坚持写一点东西，让每天过的慢一点。',
   url: 'https://bothinli.github.io/',
   baseUrl: '/blog/',
   onBrokenLinks: 'throw',

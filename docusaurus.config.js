@@ -81,7 +81,7 @@ const config = {
             type: 'doc',
             docId: 'index',
             position: 'right',
-            label: '正文',
+            label: '技术文档',
           },
           {to: 'blog/面经', label: '面经', position: 'right'},
           {

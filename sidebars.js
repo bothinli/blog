@@ -18,7 +18,7 @@ const sidebars = {
     {
       type: "doc",
       id: "index",
-      label: "正文"
+      label: "技术文档"
     },
     {
       type: 'category',

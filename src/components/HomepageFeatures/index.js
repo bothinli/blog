@@ -13,11 +13,11 @@ const FeatureList = [
     ),
   },
   {
-    title: 'About Me',
+    title: '关于我',
     // Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        now working at futu
+        专注于Devops领域技术
       </>
     ),
   },

@@ -100,16 +100,31 @@ const config = {
       colorMode: {
         respectPrefersColorScheme: true
       },
-      algolia: {
-        // The application ID provided by Algolia
-        appId: 'BWG0DEIDEP',
-
-        // Public API key: it is safe to commit it
-        apiKey: 'd3f9fff64e1510e7299229fb32996203',
-
-        indexName: 'messiahhh',
-      }
+      // algolia: {
+      //   // The application ID provided by Algolia
+      //   appId: 'BWG0DEIDEP',
+      //
+      //   // Public API key: it is safe to commit it
+      //   apiKey: 'd3f9fff64e1510e7299229fb32996203',
+      //
+      //   indexName: 'messiahhh',
+      // }
     }),
+  themes: [
+    [
+      require.resolve("@easyops-cn/docusaurus-search-local"),
+      /** @type {import("@easyops-cn/docusaurus-search-local").PluginOptions} */
+      ({
+        // ... Your options.
+        // `hashed` is recommended as long-term-cache of index file is possible.
+        hashed: true,
+        // For Docs using Chinese, The `language` is recommended to set to:
+        // ```
+        // language: ["en", "zh"],
+        // ```
+      }),
+    ],
+  ]
 };
 
 module.exports = config;

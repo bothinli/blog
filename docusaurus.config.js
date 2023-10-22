@@ -39,13 +39,13 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl: 'https://github.com/bothinli/blog/blob/master/docs/',
+          editUrl: 'https://github.com/bothinli/blog/blob/master/',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           editUrl:
-            'https://github.com/bothinli/blog/blob/master/blog/',
+            'https://github.com/bothinli/blog/blob/master/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -115,12 +115,13 @@ const config = {
       require.resolve("@easyops-cn/docusaurus-search-local"),
       /** @type {import("@easyops-cn/docusaurus-search-local").PluginOptions} */
       ({
+        // 配置项请参考：https://github.com/easyops-cn/docusaurus-search-local#theme-options
         // ... Your options.
         // `hashed` is recommended as long-term-cache of index file is possible.
         hashed: true,
         // For Docs using Chinese, The `language` is recommended to set to:
         // ```
-        // language: ["en", "zh"],
+        language: ["en", "zh"],
         // ```
       }),
     ],

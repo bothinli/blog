@@ -1,0 +1,1 @@
+(self.webpackChunkakara=self.webpackChunkakara||[]).push([[525],{5525:()=>{}}]);

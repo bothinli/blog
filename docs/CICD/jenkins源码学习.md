@@ -261,6 +261,151 @@ Trigger类是Jenkins中用于触发构建过程的抽象类，同样实现了Des
 
 
 
+## GitSCM拉取代码源码
+
+### 鉴权实现
+
+查找凭据ID，只寻找StandardUsernameCredentials类型的凭据，也就是说只有BasicSSHUserPrivateKey、UsernamePasswordCredentialsImpl两种类型能用于GitSCM拉取代码，对应页面凭据类型为Username with password和SSH Username with private key	，其他类型凭据均无效，会提示“Warning: CredentialId "Bank-Desktop-token" could not be found.”
+
+> [代码详情](https://github.com/jenkinsci/git-plugin/blob/master/src/main/java/hudson/plugins/git/GitSCM.java#L946)
+> hudson.plugins.git.GitSCM#lookupScanCredentials
+
+```java
+    private static StandardUsernameCredentials lookupScanCredentials(@NonNull Run<?, ?> build,
+                                                              @CheckForNull String url,
+                                                              @CheckForNull String ucCredentialsId) {
+        if (Util.fixEmpty(ucCredentialsId) == null) {
+            return null;
+        } else {
+            StandardUsernameCredentials c = CredentialsProvider.findCredentialById(
+                    ucCredentialsId,
+                    StandardUsernameCredentials.class,
+                    build,
+                    URIRequirementBuilder.fromUri(url).build());
+            return c != null && GitClient.CREDENTIALS_MATCHER.matches(c) ? c : null;
+        }
+    }
+```
+
+> [代码详情](https://github.com/jenkinsci/git-client-plugin/blob/master/src/main/java/org/jenkinsci/plugins/gitclient/CliGitAPIImpl.java#L2087)
+> org.jenkinsci.plugins.gitclient.CliGitAPIImpl#launchCommandWithCredentials(hudson.util.ArgumentListBuilder, java.io.File, com.cloudbees.plugins.credentials.common.StandardCredentials, org.eclipse.jgit.transport.URIish, java.lang.Integer)
+
+```java
+private String launchCommandWithCredentials(ArgumentListBuilder args, File workDir, StandardCredentials credentials, @NonNull URIish url, Integer timeout) throws GitException, InterruptedException {
+        Path key = null;
+        Path ssh = null;
+        Path askpass = null;
+        Path usernameFile = null;
+        Path passwordFile = null;
+        Path passphrase = null;
+        Path knownHostsTemp = null;
+        EnvVars env = this.environment;
+        if (!PROMPT_FOR_AUTHENTICATION && this.isAtLeastVersion(2, 3, 0, 0)) {
+            env = new EnvVars(env);
+            env.put("GIT_TERMINAL_PROMPT", "false");
+            if (this.isWindows()) {
+                env.put("GCM_INTERACTIVE", "false");
+            }
+        }
+
+        String var27;
+        try {
+            String userInfo;
+            if (credentials instanceof SSHUserPrivateKey) {
+                SSHUserPrivateKey sshUser = (SSHUserPrivateKey)credentials;
+                this.listener.getLogger().println("using GIT_SSH to set credentials " + sshUser.getDescription());
+                key = this.createSshKeyFile(sshUser);
+                userInfo = url.getUser();
+                if (userInfo == null) {
+                    userInfo = sshUser.getUsername();
+                }
+
+                passphrase = this.createPassphraseFile(sshUser);
+                knownHostsTemp = this.createTempFile("known_hosts", "");
+                if (this.launcher.isUnix()) {
+                    ssh = this.createUnixGitSSH(key, userInfo, knownHostsTemp);
+                    askpass = this.createUnixSshAskpass(sshUser, passphrase);
+                } else {
+                    ssh = this.createWindowsGitSSH(key, userInfo, knownHostsTemp);
+                    askpass = this.createWindowsSshAskpass(sshUser, passphrase);
+                }
+
+                env = new EnvVars(env);
+                env.put("GIT_SSH", ssh.toAbsolutePath().toString());
+                env.put("GIT_SSH_VARIANT", "ssh");
+                env.put("SSH_ASKPASS", askpass.toAbsolutePath().toString());
+                if (!env.containsKey("DISPLAY")) {
+                    env.put("DISPLAY", ":");
+                }
+            } else if (credentials instanceof StandardUsernamePasswordCredentials) {
+                StandardUsernamePasswordCredentials userPass = (StandardUsernamePasswordCredentials)credentials;
+                this.listener.getLogger().println("using GIT_ASKPASS to set credentials " + userPass.getDescription());
+                usernameFile = this.createUsernameFile(userPass);
+                passwordFile = this.createPasswordFile(userPass);
+                if (this.launcher.isUnix()) {
+                    askpass = this.createUnixStandardAskpass(userPass, usernameFile, passwordFile);
+                } else {
+                    askpass = this.createWindowsStandardAskpass(userPass, usernameFile, passwordFile);
+                }
+
+                env = new EnvVars(env);
+                env.put("GIT_ASKPASS", askpass.toAbsolutePath().toString());
+                env.put("SSH_ASKPASS", askpass.toAbsolutePath().toString());
+            }
+
+            if (("http".equalsIgnoreCase(url.getScheme()) || "https".equalsIgnoreCase(url.getScheme())) && this.proxy != null) {
+                boolean shouldProxy = true;
+                Iterator var28 = this.proxy.getNoProxyHostPatterns().iterator();
+
+                while(var28.hasNext()) {
+                    Pattern p = (Pattern)var28.next();
+                    if (p.matcher(url.getHost()).matches()) {
+                        shouldProxy = false;
+                        break;
+                    }
+                }
+
+                if (shouldProxy) {
+                    env = new EnvVars(env);
+                    this.listener.getLogger().println("Setting http proxy: " + this.proxy.name + ":" + this.proxy.port);
+                    userInfo = null;
+                    if (StringUtils.isNotEmpty(this.proxy.getUserName())) {
+                        userInfo = this.proxy.getUserName();
+                        if (StringUtils.isNotEmpty(this.proxy.getPassword())) {
+                            userInfo = userInfo + ":" + this.proxy.getSecretPassword();
+                        }
+                    }
+
+                    try {
+                        URI http_proxy = new URI("http", userInfo, this.proxy.name, this.proxy.port, (String)null, (String)null, (String)null);
+                        env.put("http_proxy", http_proxy.toString());
+                        env.put("https_proxy", http_proxy.toString());
+                    } catch (URISyntaxException var21) {
+                        URISyntaxException ex = var21;
+                        throw new GitException("Failed to create http proxy uri", ex);
+                    }
+                }
+            }
+
+            var27 = this.launchCommandIn(args, workDir, env, timeout);
+        } catch (IOException var22) {
+            IOException e = var22;
+            throw new GitException("Failed to setup credentials", e);
+        } finally {
+            this.deleteTempFile(key);
+            this.deleteTempFile(ssh);
+            this.deleteTempFile(askpass);
+            this.deleteTempFile(passphrase);
+            this.deleteTempFile(usernameFile);
+            this.deleteTempFile(passwordFile);
+            this.deleteTempFile(knownHostsTemp);
+        }
+
+        return var27;
+    }
+```
+
+
 
 ## 参考
 
